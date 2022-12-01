@@ -1,0 +1,31 @@
+on: [push]
+
+name: CI
+
+jobs:
+  test:
+    name: aoc-2022
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Toolchain components
+        run: rustup component add rustfmt
+      - name: Format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --check
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --tests
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
