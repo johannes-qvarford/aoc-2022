@@ -16,37 +16,6 @@ enum Rps {
     Scissors,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
-enum Choice {
-    X,
-    Y,
-    Z
-}
-
-impl Choice {
-    fn parse(c: char) -> Choice {
-        match c {
-            'X' => Choice::X,
-            'Y' => Choice::Y,
-            'Z' => Choice::Z,
-            _ => {
-                println!("Character is {c}");
-                unimplemented!()
-            }
-        }
-    }
-}
-
-impl From<Choice> for Rps {
-    fn from(c: Choice) -> Self {
-        match c {
-            Choice::X => Rps::Rock,
-            Choice::Y => Rps::Paper,
-            Choice::Z => Rps::Scissors,
-        }
-    }
-}
-
 impl Rps {
     fn shape_score(&self) -> i32 {
         match self {
@@ -85,6 +54,37 @@ impl Rps {
     }
 }
 
+#[derive(PartialEq, Clone, Copy, Debug)]
+enum Choice {
+    X,
+    Y,
+    Z
+}
+
+impl Choice {
+    fn parse(c: char) -> Choice {
+        match c {
+            'X' => Choice::X,
+            'Y' => Choice::Y,
+            'Z' => Choice::Z,
+            _ => {
+                println!("Character is {c}");
+                unimplemented!()
+            }
+        }
+    }
+}
+
+impl From<Choice> for Rps {
+    fn from(c: Choice) -> Self {
+        match c {
+            Choice::X => Rps::Rock,
+            Choice::Y => Rps::Paper,
+            Choice::Z => Rps::Scissors,
+        }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 struct Match {
     player: Choice,
@@ -102,7 +102,11 @@ impl Match {
     }
 
     fn star2_total_score(&self) -> i32 {
-        unimplemented!();
+        match self.player {
+            Choice::X => 0 + self.opponent.beats().shape_score(),
+            Choice::Y => 3 + self.opponent.shape_score(),
+            Choice::Z => 6 + self.opponent.beaten_by().shape_score(),
+        }
     }
 }
 
@@ -210,5 +214,15 @@ mod test {
     #[test]
     fn day2_1_test() {
         assert_eq!(day2_1(parser(&read_input(2)).unwrap().1), 11386)
+    }
+
+    #[test]
+    fn day2_2_example() {
+        assert_eq!(day2_2(parser("A Y\nB X\nC Z\n").unwrap().1), 12)
+    }
+
+    #[test]
+    fn day2_2_test() {
+        assert_eq!(day2_2(parser(&read_input(2)).unwrap().1), 13600)
     }
 }
