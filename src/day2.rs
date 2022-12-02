@@ -16,6 +16,37 @@ enum Rps {
     Scissors,
 }
 
+#[derive(PartialEq, Clone, Copy, Debug)]
+enum Choice {
+    X,
+    Y,
+    Z
+}
+
+impl Choice {
+    fn parse(c: char) -> Choice {
+        match c {
+            'X' => Choice::X,
+            'Y' => Choice::Y,
+            'Z' => Choice::Z,
+            _ => {
+                println!("Character is {c}");
+                unimplemented!()
+            }
+        }
+    }
+}
+
+impl From<Choice> for Rps {
+    fn from(c: Choice) -> Self {
+        match c {
+            Choice::X => Rps::Rock,
+            Choice::Y => Rps::Paper,
+            Choice::Z => Rps::Scissors,
+        }
+    }
+}
+
 impl Rps {
     fn shape_score(&self) -> i32 {
         match self {
@@ -25,7 +56,23 @@ impl Rps {
         }
     }
 
-    fn parse_opponent(c: char) -> Rps {
+    fn beats(&self) -> Rps {
+        match self {
+            Rps::Rock => Rps::Scissors,
+            Rps::Paper => Rps::Rock,
+            Rps::Scissors => Rps::Paper,
+        }
+    }
+
+    fn beaten_by(&self) -> Rps {
+        match self {
+            Rps::Rock => Rps::Paper,
+            Rps::Paper => Rps::Scissors,
+            Rps::Scissors => Rps::Rock,
+        }
+    }
+
+    fn parse(c: char) -> Rps {
         match c {
             'A' => Rps::Rock,
             'B' => Rps::Paper,
@@ -36,47 +83,39 @@ impl Rps {
             }
         }
     }
-
-    fn parse_player(c: char) -> Rps {
-        match c {
-            'X' => Rps::Rock,
-            'Y' => Rps::Paper,
-            'Z' => Rps::Scissors,
-            _ => {
-                println!("Character is {c}");
-                unimplemented!()
-            }
-        }
-    }
 }
 
 #[derive(PartialEq, Debug)]
 struct Match {
-    player: Rps,
+    player: Choice,
     opponent: Rps,
 }
 
 impl Match {
-    fn total_score(&self) -> i32 {
-        let round_score = match (self.player, self.opponent) {
-            (Rps::Rock, Rps::Scissors) | (Rps::Paper, Rps::Rock) | (Rps::Scissors, Rps::Paper) => 6,
-            (a, b) if a == b => 3,
-            _ => 0,
-        };
-        self.player.shape_score() + round_score
+    fn star1_total_score(&self) -> i32 {
+        let player_rps: Rps = self.player.into();
+        let round_score = 
+            if player_rps.beats() == self.opponent { 6 }
+            else if self.opponent.beats() == player_rps { 0 }
+            else { 3 };
+        player_rps.shape_score() + round_score
+    }
+
+    fn star2_total_score(&self) -> i32 {
+        unimplemented!();
     }
 }
 
 type Res<'a, T> = IResult<&'a str, T>;
 
-fn rps_player_parser(input: &str) -> Res<Rps> {
+fn rps_player_parser(input: &str) -> Res<Choice> {
     let (rem, c) = one_of("XYZ")(input)?;
-    Ok((rem, Rps::parse_player(c)))
+    Ok((rem, Choice::parse(c)))
 }
 
 fn rps_opponent_parser(input: &str) -> Res<Rps> {
     let (rem, c) = one_of("ABC")(input)?;
-    Ok((rem, Rps::parse_opponent(c)))
+    Ok((rem, Rps::parse(c)))
 }
 
 fn match_parser(input: &str) -> IResult<&str, Match> {
@@ -96,7 +135,11 @@ fn parser(input: &str) -> IResult<&str, Vec<Match>> {
 }
 
 fn day2_1(matches: Vec<Match>) -> i32 {
-    matches.into_iter().map(|m| m.total_score()).sum()
+    matches.into_iter().map(|m| m.star1_total_score()).sum()
+}
+
+fn day2_2(matches: Vec<Match>) -> i32 {
+    matches.into_iter().map(|m| m.star2_total_score()).sum()
 }
 
 #[cfg(test)]
@@ -112,7 +155,7 @@ mod test {
             Ok((
                 "",
                 Match {
-                    player: Rps::Scissors,
+                    player: Choice::Z,
                     opponent: Rps::Rock
                 }
             ))
@@ -127,11 +170,11 @@ mod test {
                 "",
                 vec![
                     Match {
-                        player: Rps::Paper,
+                        player: Choice::Y,
                         opponent: Rps::Rock
                     },
                     Match {
-                        player: Rps::Scissors,
+                        player: Choice::Z,
                         opponent: Rps::Paper
                     }
                 ]
@@ -147,11 +190,11 @@ mod test {
                 "",
                 vec![
                     Match {
-                        player: Rps::Paper,
+                        player: Choice::Y,
                         opponent: Rps::Rock
                     },
                     Match {
-                        player: Rps::Scissors,
+                        player: Choice::Z,
                         opponent: Rps::Paper
                     }
                 ]
@@ -166,6 +209,6 @@ mod test {
 
     #[test]
     fn day2_1_test() {
-        assert_eq!(day2_1(parser(&read_input(2)).unwrap().1), 11378)
+        assert_eq!(day2_1(parser(&read_input(2)).unwrap().1), 11386)
     }
 }
