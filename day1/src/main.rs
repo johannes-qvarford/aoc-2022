@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(clippy::let_and_return)]
 
 use anyhow::{Context, Result};
 

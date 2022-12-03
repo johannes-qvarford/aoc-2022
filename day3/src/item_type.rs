@@ -8,7 +8,7 @@ enum ParsingError {
     InvalidCharacter(char),
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct ItemType(i32);
 
 impl TryFrom<char> for ItemType {
@@ -19,17 +19,17 @@ impl TryFrom<char> for ItemType {
         value.encode_utf8(&mut ascii_bytes);
 
         if ascii_bytes > [b'z', 0, 0, 0] {
-            return Err(ParsingError::InvalidCharacter(value))?;
+            return Err(ParsingError::InvalidCharacter(value).into());
         }
 
         let b = ascii_bytes[0];
 
-        if b >= b'A' && b <= b'Z' {
+        if (b'A'..=b'Z').contains(&b) {
             Ok(Self(((b - b'A') + 27).into()))
-        } else if b >= b'a' && b <= b'z' {
+        } else if (b'a'..=b'z').contains(&b) {
             Ok(Self(((b - b'a') + 1).into()))
         } else {
-            Err(ParsingError::InvalidCharacter(value))?
+            Err(ParsingError::InvalidCharacter(value).into())
         }
     }
 }

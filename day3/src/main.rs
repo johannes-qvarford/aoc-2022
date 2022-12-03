@@ -1,7 +1,10 @@
 use color_eyre::eyre::{Context, Result};
+use group::Group;
+use item_type::ItemType;
 use rucksack::Rucksack;
 
 mod compartment;
+mod group;
 mod item_type;
 mod rucksack;
 
@@ -21,6 +24,25 @@ fn part1(rucksacks: Vec<Rucksack>) -> i32 {
         .sum()
 }
 
+fn part2(rucksacks: Vec<Rucksack>) -> Result<i32> {
+    let results: Result<Vec<ItemType>> = rucksacks
+        .chunks_exact(3)
+        .map(|chunk| {
+            let a = [chunk[0].clone(), chunk[1].clone(), chunk[2].clone()];
+            Group { rucksacks: a }
+        })
+        .map(|group| group.badge().wrap_err("extracting badge from rucksack"))
+        .collect();
+
+    let sum = results
+        .wrap_err("grouping rucksacks")?
+        .iter()
+        .map(|item_type| item_type.priority())
+        .sum();
+
+    Ok(sum)
+}
+
 const INPUT: &str = include_str!("_input");
 
 #[cfg(test)]
@@ -31,7 +53,7 @@ fn main() -> Result<()> {
     let parsed = parse(INPUT)?;
 
     println!("part1: {}", part1(parsed.clone()));
-    //println!("part2: {}", part2(parsed));
+    println!("part2: {}", part2(parsed)?);
     Ok(())
 }
 
@@ -67,5 +89,15 @@ mod test {
     #[test]
     fn part1_test() {
         assert_eq!(part1(parse(INPUT).unwrap()), 8176)
+    }
+
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(parse(EXAMPLE).unwrap()).unwrap(), 70)
+    }
+
+    #[test]
+    fn part2_test() {
+        assert_eq!(part2(parse(INPUT).unwrap()).unwrap(), 2689)
     }
 }

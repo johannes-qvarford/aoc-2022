@@ -25,6 +25,10 @@ impl TryFrom<&str> for Compartment {
 }
 
 impl Compartment {
+    pub fn iter(&self) -> impl Iterator<Item = ItemType> + '_ {
+        return self.items.iter().copied();
+    }
+
     pub fn shared_item_type(&self, other: &Compartment) -> ItemType {
         let mut combination = self.items.intersection(&other.items);
         let n = combination.next().unwrap();

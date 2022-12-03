@@ -22,7 +22,7 @@ impl Match {
 
     pub fn part2_total_score(&self) -> i32 {
         match self.player {
-            Choice::X => 0 + self.opponent.beats().shape_score(),
+            Choice::X => self.opponent.beats().shape_score(),
             Choice::Y => 3 + self.opponent.shape_score(),
             Choice::Z => 6 + self.opponent.beaten_by().shape_score(),
         }
