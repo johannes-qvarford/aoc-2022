@@ -10,9 +10,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          components: clippy, rustfmt
       - name: Format
         uses: actions-rs/cargo@v1
         with:
