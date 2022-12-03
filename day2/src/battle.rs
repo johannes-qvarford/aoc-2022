@@ -1,7 +1,7 @@
 use crate::choice::Choice;
 use crate::rps::Rps;
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Match {
     pub player: Choice,
     pub opponent: Rps,

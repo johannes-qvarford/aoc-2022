@@ -1,6 +1,6 @@
 use crate::rps::Rps;
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Choice {
     X,
     Y,
