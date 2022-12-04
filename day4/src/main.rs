@@ -26,10 +26,7 @@ fn part1(pairs: &[Pair]) -> usize {
 }
 
 fn part2(pairs: &[Pair]) -> usize {
-    let overlaps = pairs
-        .iter()
-        .filter(|pair| pair.overlaps())
-        .count();
+    let overlaps = pairs.iter().filter(|pair| pair.overlaps()).count();
     overlaps
 }
 
