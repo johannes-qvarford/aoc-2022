@@ -4,16 +4,38 @@ mod section_assignment;
 use color_eyre::eyre::{Context, Result};
 use pair::Pair;
 
+trait IntoIteratorExt: IntoIterator {
+    fn flat_map_eyre_results<U, M, F>(
+        self,
+        mut msg: M,
+        mut f: F,
+    ) -> Result<<Vec<U> as IntoIterator>::IntoIter>
+    where
+        Self: Sized,
+        M: FnMut(usize) -> String,
+        F: FnMut(Self::Item) -> Result<U>,
+    {
+        let r: Result<Vec<U>> = self
+            .into_iter()
+            .enumerate()
+            .map(|(index, v)| f(v).wrap_err_with(|| msg(index)))
+            .collect();
+        let vec = r?;
+        Ok(vec.into_iter())
+    }
+}
+
+impl<T> IntoIteratorExt for T where T: IntoIterator {}
+
 fn parse(s: &str) -> Result<Vec<Pair>> {
-    let result: Result<Vec<_>, _> = s
+    let pairs = s
         .lines()
-        .enumerate()
-        .map(|(index, line)| {
-            line.parse()
-                .wrap_err_with(|| format!("parsing a pair at index {index}"))
-        })
+        .flat_map_eyre_results(
+            |i| format!("parsing a pair at index {i}"),
+            |line| line.parse::<Pair>(),
+        )
+        .wrap_err("parsing pairs")?
         .collect();
-    let pairs = result.wrap_err("parsing pairs")?;
     Ok(pairs)
 }
 
