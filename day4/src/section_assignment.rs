@@ -16,6 +16,10 @@ impl SectionAssignment {
     pub fn fully_contains(&self, other: &SectionAssignment) -> bool {
         self.0.contains(other.0.start()) && self.0.contains(other.0.end())
     }
+
+    pub fn partially_contains(&self, other: &SectionAssignment) -> bool {
+        self.0.contains(other.0.start()) || self.0.contains(other.0.end())
+    }
 }
 
 impl FromStr for SectionAssignment {

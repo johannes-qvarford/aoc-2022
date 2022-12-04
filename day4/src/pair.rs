@@ -18,6 +18,10 @@ impl Pair {
     pub fn one_range_fully_contains_the_other(&self) -> bool {
         self.0[0].fully_contains(&self.0[1]) || self.0[1].fully_contains(&self.0[0])
     }
+
+    pub fn overlaps(&self) -> bool {
+        self.0[0].partially_contains(&self.0[1]) || self.0[1].partially_contains(&self.0[0])
+    }
 }
 
 impl FromStr for Pair {

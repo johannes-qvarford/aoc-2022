@@ -25,8 +25,12 @@ fn part1(pairs: &[Pair]) -> usize {
     overlaps
 }
 
-fn part2(_: &[Pair]) -> usize {
-    42
+fn part2(pairs: &[Pair]) -> usize {
+    let overlaps = pairs
+        .iter()
+        .filter(|pair| pair.overlaps())
+        .count();
+    overlaps
 }
 
 const INPUT: &str = include_str!("_input");
@@ -55,5 +59,10 @@ mod test {
     #[test]
     fn part1_test() {
         assert_eq!(part1(&parse(INPUT).unwrap()), 550)
+    }
+
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(EXAMPLE).unwrap()), 4)
     }
 }
