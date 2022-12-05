@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use color_eyre::eyre::{Context, Result};
 
 type O<I> = Option<<I as Iterator>::Item>;
