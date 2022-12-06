@@ -36,8 +36,8 @@ pub(crate) fn part2<const N: usize>(input: &Input) -> Output {
     let mut byte_counts = [0usize; 26];
     let mut duplicates = 0;
 
-    for byte in bytes.iter().take(buffer_size) {
-        let shrunk = shrink(*byte);
+    for &byte in bytes.iter().take(buffer_size) {
+        let shrunk = shrink(byte);
         buffer.push_back(shrunk);
         byte_counts[shrunk] += 1;
 
