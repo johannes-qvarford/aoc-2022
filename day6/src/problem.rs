@@ -1,5 +1,4 @@
-use std::collections::VecDeque;
-
+use arraydeque::{ArrayDeque, Wrapping};
 use color_eyre::eyre::Result;
 use itertools::Itertools;
 
@@ -21,13 +20,17 @@ pub(crate) fn part1(input: &Input) -> Output {
     entry.0 + 4
 }
 
-pub(crate) fn part2(input: &Input, marker_len: usize) -> Output {
+pub(crate) fn part2<const N: usize>(input: &Input) -> Output {
     fn shrink(a: u8) -> usize {
         (a - b'a') as usize
     }
 
-    let buffer_size = marker_len;
-    let mut buffer = VecDeque::new();
+    let buffer_size = N;
+    assert!(
+        N <= 15,
+        "We unfortunately can't initialize ArrayDeque with [usize; N]"
+    );
+    let mut buffer: ArrayDeque<[usize; 15], Wrapping> = ArrayDeque::new();
     let bytes = input.as_bytes();
 
     let mut byte_counts = [0usize; 26];
@@ -43,7 +46,7 @@ pub(crate) fn part2(input: &Input, marker_len: usize) -> Output {
         }
     }
 
-    for (i, shrunk) in bytes[buffer_size..].iter().map(|b| shrink(*b)).enumerate() {
+    for (i, shrunk) in bytes[buffer_size..].iter().map(|&b| shrink(b)).enumerate() {
         byte_counts[shrunk] += 1;
         buffer.push_back(shrunk);
         if byte_counts[shrunk] != 1 {
@@ -88,18 +91,18 @@ mod test {
 
     #[test]
     fn part2_example_small() {
-        assert_eq!(part2(&parse("aaabcaa").unwrap(), 3), 5)
+        assert_eq!(part2::<3>(&parse("aaabcaa").unwrap()), 5)
     }
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse(EXAMPLE_STR).unwrap(), 14), 19)
+        assert_eq!(part2::<14>(&parse(EXAMPLE_STR).unwrap()), 19)
     }
 
     #[test]
     fn part2_example2() {
         assert_eq!(
-            part2(&parse("bvwbjplbgvbhsrlpgdmjqwftvncz").unwrap(), 14),
+            part2::<14>(&parse("bvwbjplbgvbhsrlpgdmjqwftvncz").unwrap()),
             23
         )
     }
@@ -107,7 +110,7 @@ mod test {
     #[test]
     fn part2_example3() {
         assert_eq!(
-            part2(&parse("nppdvjthqldpwncqszvftbrmjlhg").unwrap(), 14),
+            part2::<14>(&parse("nppdvjthqldpwncqszvftbrmjlhg").unwrap()),
             23
         )
     }
@@ -115,13 +118,13 @@ mod test {
     #[test]
     fn part2_example4() {
         assert_eq!(
-            part2(&parse("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg").unwrap(), 14),
+            part2::<14>(&parse("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg").unwrap()),
             29
         )
     }
 
     #[test]
     fn part2_test() {
-        assert_eq!(part2(&parse(INPUT_STR).unwrap(), 14), 2313)
+        assert_eq!(part2::<14>(&parse(INPUT_STR).unwrap()), 2313)
     }
 }

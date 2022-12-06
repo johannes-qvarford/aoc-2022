@@ -8,6 +8,6 @@ fn main() -> Result<()> {
     let parsed = parse(INPUT_STR)?;
 
     println!("part1: {:?}", part1(&parsed));
-    println!("part2: {:?}", part2(&parsed, 14));
+    println!("part2: {:?}", part2::<14>(&parsed));
     Ok(())
 }
