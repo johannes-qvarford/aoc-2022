@@ -1,11 +1,11 @@
 use itertools::Itertools;
-use nom::{combinator::all_consuming, IResult, bytes::complete::tag};
+use nom::combinator::all_consuming;
 use std::collections::HashMap;
 
 use self::{
     domain::{DirectoryContent, DirectoryName, Interaction, Node, Space, PARENT_DIRECTORY},
     parsing::parse_interactions,
-    parsing::MyResult
+    parsing::MyResult,
 };
 
 mod domain;
@@ -15,19 +15,24 @@ pub(crate) type Input = Vec<Interaction>;
 
 pub(crate) type Output = u32;
 
-pub(crate) fn parse<'a>(s: &'a str) -> MyResult<Input> {
+pub(crate) fn parse(s: &str) -> MyResult<Input> {
     all_consuming(parse_interactions)(s)
     //tag("$ cd /")(s)?;
     //Ok(("", vec![]))
 }
 
-fn nodes_to_directory_content(parent_directory: DirectoryName, nodes: Vec<Node>) -> DirectoryContent {
+fn nodes_to_directory_content(
+    parent_directory: DirectoryName,
+    nodes: Vec<Node>,
+) -> DirectoryContent {
     let mut computed_space = Space(0);
     let mut uncomputed_directories: Vec<DirectoryName> = vec![];
 
     for node in nodes {
         match node {
-            Node::Directory(directory_name) => uncomputed_directories.push(DirectoryName(format!("{parent_directory}/{directory_name}"))),
+            Node::Directory(directory_name) => uncomputed_directories.push(DirectoryName(format!(
+                "{parent_directory}/{directory_name}"
+            ))),
             Node::File(space) => computed_space += space,
         }
     }
@@ -42,7 +47,7 @@ fn space_for_directory(
     filesystem: &mut HashMap<DirectoryName, DirectoryContent>,
 ) -> Space {
     let content = filesystem
-        .get(&directory_name)
+        .get(directory_name)
         .expect("All directories can be referenced from the filesystem.")
         .clone();
     let new_space = content
@@ -102,7 +107,7 @@ pub(crate) fn part1(input: Input) -> Output {
     small_directories_total_space.0
 }
 
-pub(crate) fn part2(input: &Input) -> Output {
+pub(crate) fn part2(_input: &Input) -> Output {
     42
 }
 
@@ -128,7 +133,12 @@ mod test {
 
     #[test]
     fn part1_test_small2() {
-        assert_eq!(DirectoryName("direct".to_owned()), parsing::parse_directory_name("direct").expect("to be able to parse directory name").1);
+        assert_eq!(
+            DirectoryName("direct".to_owned()),
+            parsing::parse_directory_name("direct")
+                .expect("to be able to parse directory name")
+                .1
+        );
         assert_eq!(part1(parse(SMALL2_STR).unwrap().1), 600)
     }
 

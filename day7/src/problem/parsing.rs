@@ -1,39 +1,36 @@
 use nom::branch::alt;
 
-use nom::character::{is_newline, is_space};
 use nom::error::{ErrorKind, ParseError};
 use nom::multi::many1;
 use nom::{multi::separated_list1, IResult};
-use nom::Parser;
 
 use nom::sequence::separated_pair;
 
-use nom::character::complete::{none_of, one_of};
-
-use nom::bytes::complete::{tag, take_until};
+use nom::bytes::complete::tag;
 
 use nom::sequence::preceded;
 
 use nom::character::complete::u32;
 
-use nom::character::complete::alpha1;
+use nom::combinator::map;
 
-use nom::combinator::{map, eof};
-
-use std::num::{NonZeroU32, NonZeroUsize};
 use std::str;
-
-use nom::InputTakeAtPosition;
 
 use super::domain::{DirectoryName, Interaction, Node, Space};
 
 pub(crate) type MyResult<'a, T> = IResult<&'a str, T>;
 
 fn filename_character(s: &str) -> MyResult<char> {
-    match s.chars().nth(0) {
+    match s.chars().next() {
         Option::Some(c) if c.is_alphabetic() || c == '.' || c == '/' => Ok((&s[1..], c)),
-        Option::Some(c) => Err(nom::Err::Error(ParseError::from_error_kind(s, ErrorKind::Alpha.to_owned()))),
-        Option::None => Err(nom::Err::Error(ParseError::from_error_kind(s, ErrorKind::Eof))),
+        Option::Some(_c) => Err(nom::Err::Error(ParseError::from_error_kind(
+            s,
+            ErrorKind::Alpha.to_owned(),
+        ))),
+        Option::None => Err(nom::Err::Error(ParseError::from_error_kind(
+            s,
+            ErrorKind::Eof,
+        ))),
     }
 }
 
@@ -50,7 +47,7 @@ pub(crate) fn parse_file(i: &str) -> MyResult<Node> {
 
 pub(crate) fn parse_directory(i: &str) -> MyResult<Node> {
     let result = preceded(tag("dir "), parse_directory_name);
-    map(result, |dn| { Node::Directory(dn) })(i)
+    map(result, |dn| Node::Directory(dn))(i)
 }
 
 pub(crate) fn parse_node(i: &str) -> MyResult<Node> {
@@ -58,7 +55,7 @@ pub(crate) fn parse_node(i: &str) -> MyResult<Node> {
 }
 
 pub(crate) fn parse_cd(i: &str) -> MyResult<Interaction> {
-    let cd = map(parse_directory_name, |dn| { Interaction::Cd(dn) });
+    let cd = map(parse_directory_name, |dn| Interaction::Cd(dn));
     preceded(tag("cd "), cd)(i)
 }
 

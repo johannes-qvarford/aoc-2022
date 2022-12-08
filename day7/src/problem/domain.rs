@@ -37,7 +37,6 @@ impl Display for DirectoryName {
     }
 }
 
-
 pub(crate) const PARENT_DIRECTORY: &str = "..";
 
 #[derive(Clone)]
