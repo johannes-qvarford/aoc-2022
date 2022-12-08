@@ -42,7 +42,7 @@ fn nodes_to_directory_content(
     }
 }
 
-fn path(v: &Vec<DirectoryName>) -> String {
+fn path(v: &[DirectoryName]) -> String {
     v.iter().join("/")
 }
 
@@ -56,10 +56,8 @@ fn build_filesystem(input: &Input) -> HashMap<DirectoryName, DirectoryContent> {
             Interaction::Cd(directory_name) => {
                 if directory_name.0 == PARENT_DIRECTORY {
                     cwd.pop();
-                    let p = path(&cwd);
                 } else {
                     cwd.push(directory_name.clone());
-                    let p = path(&cwd);
                 }
             }
             Interaction::Ls(nodes) => {
@@ -163,7 +161,7 @@ pub(crate) fn part2(input: &Input) -> Output {
 
     let best_fit = directory_names
         .iter()
-        .filter_map(|dn| best_fit_directory(&dn, space_to_free, &mut filesystem))
+        .filter_map(|dn| best_fit_directory(dn, space_to_free, &mut filesystem))
         .min();
 
     best_fit

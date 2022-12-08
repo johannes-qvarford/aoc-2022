@@ -47,7 +47,7 @@ pub(crate) fn parse_file(i: &str) -> MyResult<Node> {
 
 pub(crate) fn parse_directory(i: &str) -> MyResult<Node> {
     let result = preceded(tag("dir "), parse_directory_name);
-    map(result, |dn| Node::Directory(dn))(i)
+    map(result, Node::Directory)(i)
 }
 
 pub(crate) fn parse_node(i: &str) -> MyResult<Node> {
@@ -55,7 +55,7 @@ pub(crate) fn parse_node(i: &str) -> MyResult<Node> {
 }
 
 pub(crate) fn parse_cd(i: &str) -> MyResult<Interaction> {
-    let cd = map(parse_directory_name, |dn| Interaction::Cd(dn));
+    let cd = map(parse_directory_name, Interaction::Cd);
     preceded(tag("cd "), cd)(i)
 }
 
