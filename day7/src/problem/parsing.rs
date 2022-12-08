@@ -10,7 +10,7 @@ use nom::bytes::complete::tag;
 
 use nom::sequence::preceded;
 
-use nom::character::complete::u32;
+use nom::character::complete::i32;
 
 use nom::combinator::map;
 
@@ -41,7 +41,7 @@ pub(crate) fn parse_directory_name(s: &str) -> MyResult<DirectoryName> {
 
 pub(crate) fn parse_file(i: &str) -> MyResult<Node> {
     let filename = many1(filename_character);
-    let pair = separated_pair(u32, tag(" "), filename);
+    let pair = separated_pair(i32, tag(" "), filename);
     map(pair, |(space, _)| Node::File(Space(space)))(i)
 }
 

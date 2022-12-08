@@ -8,7 +8,7 @@ fn main() -> Result<()> {
 
     let parsed = parse(INPUT_STR)?.1;
 
-    println!("part1: {:?}", part1(parsed.clone()));
+    println!("part1: {:?}", part1(&parsed));
     println!("part2: {:?}", part2(&parsed));
 
     Ok(())
