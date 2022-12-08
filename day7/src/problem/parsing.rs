@@ -16,7 +16,7 @@ use nom::combinator::map;
 
 use std::str;
 
-use super::domain::{DirectoryName, Interaction, Node, space::Space};
+use super::domain::{space::Space, DirectoryName, Interaction, Node};
 
 pub(crate) type MyResult<'a, T> = IResult<&'a str, T>;
 
@@ -36,7 +36,9 @@ fn filename_character(s: &str) -> MyResult<char> {
 
 pub(crate) fn parse_directory_name(s: &str) -> MyResult<DirectoryName> {
     let array = many1(filename_character);
-    map(array, |chars| DirectoryName(chars.iter().collect()))(s)
+    map(array, |chars| {
+        DirectoryName::from(chars.iter().collect::<String>())
+    })(s)
 }
 
 pub(crate) fn parse_file(i: &str) -> MyResult<Node> {

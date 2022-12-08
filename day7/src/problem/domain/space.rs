@@ -9,10 +9,14 @@ use std::ops::AddAssign;
 use std::ops::Sub;
 
 #[derive(PartialEq, PartialOrd, Debug, Eq, Ord, Clone, Copy)]
-pub(crate) struct Space(pub(crate) i32);
+pub(crate) struct Space(i32);
 impl Space {
     pub(crate) fn bytes(bytes: i32) -> Space {
         Space(bytes)
+    }
+
+    pub(crate) fn in_bytes(&self) -> i32 {
+        self.0
     }
 }
 

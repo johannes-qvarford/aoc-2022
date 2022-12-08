@@ -1,9 +1,8 @@
-use itertools::Itertools;
 use nom::combinator::all_consuming;
 use std::collections::HashMap;
 
 use self::{
-    domain::{DirectoryContent, DirectoryName, Interaction, Node, space::Space, PARENT_DIRECTORY},
+    domain::{space::Space, DirectoryContent, Interaction, Node, Path},
     parsing::parse_interactions,
     parsing::MyResult,
 };
@@ -21,18 +20,15 @@ pub(crate) fn parse(s: &str) -> MyResult<Input> {
     //Ok(("", vec![]))
 }
 
-fn nodes_to_directory_content(
-    parent_directory: DirectoryName,
-    nodes: &Vec<Node>,
-) -> DirectoryContent {
+fn nodes_to_directory_content(parent: &Path, nodes: &Vec<Node>) -> DirectoryContent {
     let mut computed_space = Space::bytes(0);
-    let mut uncomputed_directories: Vec<DirectoryName> = vec![];
+    let mut uncomputed_directories: Vec<Path> = vec![];
 
     for node in nodes {
         match node {
-            Node::Directory(directory_name) => uncomputed_directories.push(DirectoryName(format!(
-                "{parent_directory}/{directory_name}"
-            ))),
+            Node::Directory(directory_name) => {
+                uncomputed_directories.push(parent.with_segment(directory_name.clone()));
+            }
             Node::File(space) => computed_space += *space,
         }
     }
@@ -42,31 +38,18 @@ fn nodes_to_directory_content(
     }
 }
 
-fn path(v: &[DirectoryName]) -> String {
-    v.iter().join("/")
-}
+fn build_filesystem(input: &Input) -> HashMap<Path, DirectoryContent> {
+    let mut filesystem: HashMap<Path, DirectoryContent> = HashMap::new();
 
-fn build_filesystem(input: &Input) -> HashMap<DirectoryName, DirectoryContent> {
-    let mut filesystem: HashMap<DirectoryName, DirectoryContent> = HashMap::new();
-
-    let mut cwd: Vec<DirectoryName> = Vec::new();
+    let mut cwd = Path::root();
 
     for interaction in input {
         match interaction {
             Interaction::Cd(directory_name) => {
-                if directory_name.0 == PARENT_DIRECTORY {
-                    cwd.pop();
-                } else {
-                    cwd.push(directory_name.clone());
-                }
+                cwd.add_segment(directory_name.clone());
             }
             Interaction::Ls(nodes) => {
-                let directory_name = DirectoryName(path(&cwd));
-
-                filesystem.insert(
-                    directory_name.clone(),
-                    nodes_to_directory_content(directory_name, nodes),
-                );
+                filesystem.insert(cwd.clone(), nodes_to_directory_content(&cwd, nodes));
             }
         }
     }
@@ -74,21 +57,21 @@ fn build_filesystem(input: &Input) -> HashMap<DirectoryName, DirectoryContent> {
 }
 
 fn space_for_directory(
-    directory_name: &DirectoryName,
-    filesystem: &mut HashMap<DirectoryName, DirectoryContent>,
+    directory_path: Path,
+    filesystem: &mut HashMap<Path, DirectoryContent>,
 ) -> Space {
     let content = filesystem
-        .get(directory_name)
+        .get(&directory_path)
         .expect("All directories can be referenced from the filesystem.")
         .clone();
     let new_space = content
         .uncomputed_directories
         .iter()
-        .map(|sub_directory_name| space_for_directory(sub_directory_name, filesystem))
+        .map(|sub_directory_path| space_for_directory(sub_directory_path.clone(), filesystem))
         .sum();
     let total_space = content.computed_space + new_space;
     filesystem.insert(
-        directory_name.clone(),
+        directory_path,
         DirectoryContent {
             computed_space: total_space,
             uncomputed_directories: vec![],
@@ -106,34 +89,34 @@ pub(crate) fn part1(input: &Input) -> Output {
     let mut small_directories_total_space = Space::bytes(0);
 
     for directory_name in directory_names {
-        let space = space_for_directory(&directory_name, &mut filesystem);
+        let space = space_for_directory(directory_name, &mut filesystem);
 
         if space <= Space::bytes(100_000) {
             small_directories_total_space += space;
         }
     }
 
-    small_directories_total_space.0
+    small_directories_total_space.in_bytes()
 }
 
 fn best_fit_directory(
-    directory_name: &DirectoryName,
+    directory_path: Path,
     space_to_free: Space,
-    filesystem: &mut HashMap<DirectoryName, DirectoryContent>,
+    filesystem: &mut HashMap<Path, DirectoryContent>,
 ) -> Option<Space> {
     let content = filesystem
-        .get(directory_name)
+        .get(&directory_path)
         .expect("All directories can be referenced from the filesystem.")
         .clone();
     let content_space = content
         .uncomputed_directories
         .iter()
-        .map(|sub_directory_name| space_for_directory(sub_directory_name, filesystem))
+        .map(|sub_directory_name| space_for_directory(sub_directory_name.clone(), filesystem))
         .sum();
     let total = content.computed_space + content_space;
 
     filesystem.insert(
-        directory_name.clone(),
+        directory_path,
         DirectoryContent {
             computed_space: total,
             uncomputed_directories: vec![],
@@ -147,25 +130,26 @@ fn best_fit_directory(
     }
 }
 
+#[allow(clippy::needless_collect)]
 pub(crate) fn part2(input: &Input) -> Output {
     let mut filesystem = build_filesystem(input);
 
     let total_space = Space::bytes(70_000_000);
     let space_needed = Space::bytes(30_000_000);
     let min_space_to_leave = total_space - space_needed;
-    let space_used = space_for_directory(&DirectoryName("/".to_owned()), &mut filesystem);
+    let space_used = space_for_directory(Path::root(), &mut filesystem);
     let space_to_free = space_used - min_space_to_leave;
 
     let directory_names: Vec<_> = filesystem.keys().cloned().collect();
 
     let best_fit = directory_names
-        .iter()
-        .filter_map(|dn| best_fit_directory(dn, space_to_free, &mut filesystem))
+        .into_iter()
+        .filter_map(|path| best_fit_directory(path, space_to_free, &mut filesystem))
         .min();
 
     best_fit
         .expect("We have to have found something small enough")
-        .0
+        .in_bytes()
 }
 
 pub(crate) const INPUT_STR: &str = include_str!("_input");
@@ -181,6 +165,8 @@ const SMALL2_STR: &str = include_str!("_small2");
 
 #[cfg(test)]
 mod test {
+    use crate::problem::domain::DirectoryName;
+
     use super::*;
 
     #[test]
@@ -191,7 +177,7 @@ mod test {
     #[test]
     fn part1_test_small2() {
         assert_eq!(
-            DirectoryName("direct".to_owned()),
+            DirectoryName::from("direct".to_owned()),
             parsing::parse_directory_name("direct")
                 .expect("to be able to parse directory name")
                 .1
