@@ -3,7 +3,7 @@ use nom::combinator::all_consuming;
 use std::collections::HashMap;
 
 use self::{
-    domain::{DirectoryContent, DirectoryName, Interaction, Node, Space, PARENT_DIRECTORY},
+    domain::{DirectoryContent, DirectoryName, Interaction, Node, space::Space, PARENT_DIRECTORY},
     parsing::parse_interactions,
     parsing::MyResult,
 };
@@ -25,7 +25,7 @@ fn nodes_to_directory_content(
     parent_directory: DirectoryName,
     nodes: &Vec<Node>,
 ) -> DirectoryContent {
-    let mut computed_space = Space(0);
+    let mut computed_space = Space::bytes(0);
     let mut uncomputed_directories: Vec<DirectoryName> = vec![];
 
     for node in nodes {
@@ -103,12 +103,12 @@ pub(crate) fn part1(input: &Input) -> Output {
 
     let directory_names: Vec<_> = filesystem.keys().cloned().collect();
 
-    let mut small_directories_total_space = Space(0);
+    let mut small_directories_total_space = Space::bytes(0);
 
     for directory_name in directory_names {
         let space = space_for_directory(&directory_name, &mut filesystem);
 
-        if space <= Space(100_000) {
+        if space <= Space::bytes(100_000) {
             small_directories_total_space += space;
         }
     }
@@ -150,12 +150,11 @@ fn best_fit_directory(
 pub(crate) fn part2(input: &Input) -> Output {
     let mut filesystem = build_filesystem(input);
 
-    let total_space = 70_000_000;
-    let space_needed = 30_000_000;
+    let total_space = Space::bytes(70_000_000);
+    let space_needed = Space::bytes(30_000_000);
     let min_space_to_leave = total_space - space_needed;
     let space_used = space_for_directory(&DirectoryName("/".to_owned()), &mut filesystem);
-    let space_to_free = Space(space_used.0 - min_space_to_leave);
-    println!("SPACE TO FREE {space_to_free:?}");
+    let space_to_free = space_used - min_space_to_leave;
 
     let directory_names: Vec<_> = filesystem.keys().cloned().collect();
 

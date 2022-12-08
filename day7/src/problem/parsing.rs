@@ -16,7 +16,7 @@ use nom::combinator::map;
 
 use std::str;
 
-use super::domain::{DirectoryName, Interaction, Node, Space};
+use super::domain::{DirectoryName, Interaction, Node, space::Space};
 
 pub(crate) type MyResult<'a, T> = IResult<&'a str, T>;
 
@@ -42,7 +42,7 @@ pub(crate) fn parse_directory_name(s: &str) -> MyResult<DirectoryName> {
 pub(crate) fn parse_file(i: &str) -> MyResult<Node> {
     let filename = many1(filename_character);
     let pair = separated_pair(i32, tag(" "), filename);
-    map(pair, |(space, _)| Node::File(Space(space)))(i)
+    map(pair, |(space, _)| Node::File(Space::bytes(space)))(i)
 }
 
 pub(crate) fn parse_directory(i: &str) -> MyResult<Node> {
