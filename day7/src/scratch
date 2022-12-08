@@ -1,0 +1,12 @@
+i need to keep a stack of directory names.
+whenever i encounter content, i need to find the subtree and add to it.
+therefor, a directory can contain a vec of nodes, that are discovered one at a time and added to the tree.
+each Tree refers to it's parents at construction
+cd .. sets the current tree to the parent of the current tree.
+cd x creates a new Tree that sets its' parent to the current tree.
+Each tree knows its name on construction.
+but we will just be shaving this tree until we get to the bottom, the intermediary trees are gone.
+
+instead of a tree, let's just use a dictionary, and add an entry at each ls.
+let's keep a stack so we can pop it when doing "cd ..".
+then we do a depth first search, replacing directory names, with actual sizes.
