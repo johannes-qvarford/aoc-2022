@@ -3,7 +3,7 @@ use std::cmp::max;
 use color_eyre::eyre::Result;
 use itertools::Itertools;
 
-use self::grid::Grid;
+use self::grid::{Grid, Position};
 
 pub(crate) type Input = Grid<i32>;
 
@@ -40,36 +40,31 @@ pub(crate) fn part1(input: &Input) -> Output {
     let visibility_vec = vec![false; size as usize];
     let mut visibility = grid::Grid::new(side_length, visibility_vec);
 
+    fn p(x: i32, y: i32) -> Position {
+        Position::from((x, y))
+    }
     let scans = [
-        ((0, 0), (1, 0), (0, 1), side_length),
-        ((0, 0), (0, 1), (1, 0), side_length),
-        ((side_length - 1, 0), (-1, 0), (0, 1), side_length),
-        ((0, side_length - 1), (0, -1), (1, 0), side_length),
+        (p(0, 0), p(1, 0), p(0, 1), side_length),
+        (p(0, 0), p(0, 1), p(1, 0), side_length),
+        (p(side_length - 1, 0), p(-1, 0), p(0, 1), side_length),
+        (p(0, side_length - 1), p(0, -1), p(1, 0), side_length),
     ];
 
-    // println!("original grid:\n{}", grid);
-
-    for (_, ((x, y), (jx, jy), (ix, iy), len)) in scans.into_iter().enumerate() {
+    for (_, (start, jp, ip, len)) in scans.into_iter().enumerate() {
         for i in 0..len {
             let mut highest = -1;
             for j in 0..len {
-                let cx = x + (jx * j) + (ix * i);
-                let cy = y + (jy * j) + (iy * i);
-                let gi = (cx, cy);
+                let current: Position = start + (jp * j) + (ip * i);
 
-                // println!("Grid index: ({}, {})", gi.0, gi.1);
-                let new_highest = max(highest, input[gi]);
+                let new_highest = max(highest, input[current]);
 
                 if new_highest > highest {
                     highest = new_highest;
-                    visibility[gi] = true;
+                    visibility[current] = true;
                 }
             }
         }
-        // println!("visibility grid scan ({}):\n{}", scan_index, visibility);
     }
-
-    // println!("visibility grid afterwards:\n{}", visibility);
 
     visibility
         .into_iter()
