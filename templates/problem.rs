@@ -1,4 +1,3 @@
-use arraydeque::{ArrayDeque, Wrapping};
 use color_eyre::eyre::Result;
 use itertools::Itertools;
 
@@ -11,11 +10,11 @@ pub(crate) fn parse(s: &str) -> Result<Input> {
 }
 
 pub(crate) fn part1(input: &Input) -> Output {
-    Ok(42)
+    42
 }
 
 pub(crate) fn part2(input: &Input) -> Output {
-    Ok(42)
+    42
 }
 
 pub(crate) const INPUT_STR: &str = include_str!("_input");
@@ -26,7 +25,6 @@ const EXAMPLE_STR: &str = include_str!("_example");
 #[cfg(test)]
 mod test {
     use super::*;
-    use test_case::test_case;
 
     #[test]
     fn part1_test_example() {

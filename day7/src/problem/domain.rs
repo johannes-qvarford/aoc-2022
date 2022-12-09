@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 pub(crate) mod space;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Debug)]
@@ -18,12 +16,6 @@ impl DirectoryName {
 impl From<String> for DirectoryName {
     fn from(s: String) -> Self {
         DirectoryName(s)
-    }
-}
-
-impl Display for DirectoryName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
     }
 }
 
