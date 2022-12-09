@@ -20,6 +20,12 @@ impl Position {
     }
 }
 
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
 impl From<(i32, i32)> for Position {
     fn from((x, y): (i32, i32)) -> Self {
         Position { x, y }
@@ -62,8 +68,17 @@ impl<T> Grid<T> {
         self.side_length
     }
 
+    pub(crate) fn size(&self) -> usize {
+        self.data.len()
+    }
+
     pub(crate) fn into_iter(self) -> IntoIter<T> {
         self.data.into_iter()
+    }
+
+    pub(crate) fn in_bounds(&self, tree_position: Position) -> bool {
+        let range = 0..self.side_length;
+        range.contains(&tree_position.x) && range.contains(&tree_position.y)
     }
 }
 
@@ -96,10 +111,10 @@ impl Display for Grid<bool> {
 
 impl Display for Grid<i32> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in 0..self.side_length {
-            for j in 0..self.side_length {
-                let s = self[(i, j).into()];
-                s.fmt(f)?
+        for y in 0..self.side_length {
+            for x in 0..self.side_length {
+                let s = self[(x, y).into()];
+                write!(f, "{:02} ", s)?
             }
             '\n'.fmt(f)?
         }

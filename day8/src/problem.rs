@@ -35,9 +35,8 @@ mod grid;
 
 pub(crate) fn part1(input: &Input) -> Output {
     let side_length = input.side_length();
-    let size = side_length * side_length;
 
-    let visibility_vec = vec![false; size as usize];
+    let visibility_vec = vec![false; input.size()];
     let mut visibility = grid::Grid::new(side_length, visibility_vec);
 
     fn p(x: i32, y: i32) -> Position {
@@ -74,8 +73,44 @@ pub(crate) fn part1(input: &Input) -> Output {
         .expect("Number of visible trees fits in 31 bits.")
 }
 
-pub(crate) fn part2(_input: &Input) -> Output {
-    42
+pub(crate) fn part2(input: &Input) -> Output {
+    let side_length = input.side_length();
+    fn p(x: i32, y: i32) -> Position {
+        Position::from((x, y))
+    }
+    let scans = [p(1, 0), p(0, 1), p(-1, 0), p(0, -1)];
+
+    let treehouse_vec = vec![0; input.size()];
+    let mut treehouse = Grid::new(side_length, treehouse_vec);
+
+    for i in 0..side_length {
+        for j in 0..side_length {
+            let viewpoint: Position = (i, j).into();
+            let viewpoint_height = input[viewpoint];
+            let mut scenic_score = 1;
+            for scan in scans {
+                'scan: for k in 1..side_length {
+                    let tree_position = viewpoint + (scan * k);
+                    if !input.in_bounds(tree_position) {
+                        scenic_score *= k - 1;
+                        break 'scan;
+                    }
+                    let tree_height = input[tree_position];
+
+                    if tree_height >= viewpoint_height {
+                        scenic_score *= k;
+                        break 'scan;
+                    }
+                }
+            }
+            treehouse[viewpoint] = scenic_score;
+        }
+    }
+
+    treehouse
+        .into_iter()
+        .max()
+        .expect("At least one tree in the grid")
 }
 
 pub(crate) const INPUT_STR: &str = include_str!("_input");
@@ -99,11 +134,11 @@ mod test {
 
     #[test]
     fn part2_test_example() {
-        assert_eq!(part2(&parse(EXAMPLE_STR).unwrap()), 42)
+        assert_eq!(part2(&parse(EXAMPLE_STR).unwrap()), 8)
     }
 
     #[test]
     fn part2_test_input() {
-        assert_eq!(part2(&parse(INPUT_STR).unwrap()), 42)
+        assert_eq!(part2(&parse(INPUT_STR).unwrap()), 335580)
     }
 }
