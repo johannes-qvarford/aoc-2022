@@ -1,87 +1,21 @@
-use std::{
-    cmp::max,
-    fmt::Display,
-    ops::{Index, IndexMut},
-    vec::IntoIter,
-};
+use std::cmp::max;
 
 use color_eyre::eyre::Result;
 use itertools::Itertools;
 
-pub(crate) type Input = String;
+use self::grid::Grid;
+
+pub(crate) type Input = Grid<i32>;
 
 pub(crate) type Output = i32;
 
 pub(crate) fn parse(s: &str) -> Result<Input> {
-    Ok(s.to_owned())
-}
-
-type Position = (i32, i32);
-
-struct Grid<T> {
-    side_length: i32,
-    data: Vec<T>,
-}
-
-impl<T> Grid<T> {
-    fn new(side_length: i32, data: Vec<T>) -> Grid<T> {
-        Grid { side_length, data }
-    }
-
-    pub(crate) fn into_iter(self) -> IntoIter<T> {
-        self.data.into_iter()
-    }
-}
-
-impl<T> Index<Position> for Grid<T> {
-    type Output = T;
-
-    fn index(&self, index: Position) -> &Self::Output {
-        &self.data[usize::try_from(index.0 + (index.1 * self.side_length))
-            .expect("grid index is 0 or positive")]
-    }
-}
-
-impl<T> IndexMut<Position> for Grid<T> {
-    fn index_mut(&mut self, index: Position) -> &mut Self::Output {
-        &mut self.data[usize::try_from(index.0 + (index.1 * self.side_length))
-            .expect("grid index is 0 or positive")]
-    }
-}
-
-impl Display for Grid<bool> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in 0..self.side_length {
-            for j in 0..self.side_length {
-                let s = if self[(i, j)] { 'X' } else { 'O' };
-                s.fmt(f)?
-            }
-            '\n'.fmt(f)?
-        }
-        Ok(())
-    }
-}
-
-impl Display for Grid<i32> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in 0..self.side_length {
-            for j in 0..self.side_length {
-                let s = self[(i, j)];
-                s.fmt(f)?
-            }
-            '\n'.fmt(f)?
-        }
-        Ok(())
-    }
-}
-
-pub(crate) fn part1(input: &Input) -> Output {
-    let width: i32 = input
+    let width: i32 = s
         .find('\n')
         .expect("There are multiple lines in the input")
         .try_into()
         .expect("Should fit in 32 bits.");
-    let grid_vec: Vec<i32> = input
+    let grid_vec: Vec<i32> = s
         .chars()
         .filter(|c| !c.is_whitespace())
         .map(|c| {
@@ -91,22 +25,26 @@ pub(crate) fn part1(input: &Input) -> Output {
                 .expect("Digits are never negative")
         })
         .collect_vec();
-    let size: i32 = grid_vec
-        .len()
-        .try_into()
-        .expect("Grid length should fit in 31 bits");
-    let height = size / width;
 
     let grid = Grid::new(width, grid_vec);
 
+    Ok(grid)
+}
+
+mod grid;
+
+pub(crate) fn part1(input: &Input) -> Output {
+    let side_length = input.side_length();
+    let size = side_length * side_length;
+
     let visibility_vec = vec![false; size as usize];
-    let mut visibility = Grid::new(width, visibility_vec);
+    let mut visibility = grid::Grid::new(side_length, visibility_vec);
 
     let scans = [
-        ((0, 0), (1, 0), (0, 1), width),
-        ((0, 0), (0, 1), (1, 0), height),
-        ((width - 1, 0), (-1, 0), (0, 1), width),
-        ((0, height - 1), (0, -1), (1, 0), height),
+        ((0, 0), (1, 0), (0, 1), side_length),
+        ((0, 0), (0, 1), (1, 0), side_length),
+        ((side_length - 1, 0), (-1, 0), (0, 1), side_length),
+        ((0, side_length - 1), (0, -1), (1, 0), side_length),
     ];
 
     // println!("original grid:\n{}", grid);
@@ -120,7 +58,7 @@ pub(crate) fn part1(input: &Input) -> Output {
                 let gi = (cx, cy);
 
                 // println!("Grid index: ({}, {})", gi.0, gi.1);
-                let new_highest = max(highest, grid[gi]);
+                let new_highest = max(highest, input[gi]);
 
                 if new_highest > highest {
                     highest = new_highest;
