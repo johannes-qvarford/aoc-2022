@@ -2,39 +2,46 @@ use std::fmt::Display;
 
 use super::vector::{Vector, ORIGIN};
 
+#[derive(Clone)]
 pub(crate) struct Snake {
-    pub(crate) head: Vector,
-    pub(crate) tail: Vector,
+    pub(crate) segments: Box<[Vector]>,
 }
 
 impl Snake {
-    pub(crate) fn new() -> Snake {
+    pub(crate) fn of_length(len: i32) -> Snake {
         Snake {
-            head: ORIGIN,
-            tail: ORIGIN,
+            segments: vec![ORIGIN; len as usize].into_boxed_slice(),
         }
     }
 
     pub(crate) fn mov(&self, direction: Vector) -> Snake {
-        let new_head = self.head + direction;
-        let new_tail = Snake::constrain_tail_to_head(self.tail, new_head, self.head);
-        Snake {
-            head: new_head,
-            tail: new_tail,
+        let mut copy = self.clone();
+
+        copy.segments[0] = copy.segments[0] + direction;
+        for i in 1..copy.segments.len() {
+            let before = copy.segments[i - 1];
+            let after = copy.segments[i];
+            let new_after = Snake::constrain_after_to_before(before, after);
+            copy.segments[i] = new_after;
+        }
+        copy
+    }
+
+    pub(crate) fn constrain_after_to_before(before: Vector, after: Vector) -> Vector {
+        let difference = before - after;
+        if difference.x.abs() > 1 || difference.y.abs() > 1 {
+            after + (difference.x.signum(), difference.y.signum()).into()
+        } else {
+            after
         }
     }
 
-    pub(crate) fn constrain_tail_to_head(
-        tail: Vector,
-        new_head: Vector,
-        old_head: Vector,
-    ) -> Vector {
-        let difference = new_head - tail;
-        if difference.x.abs() > 1 || difference.y.abs() > 1 {
-            old_head
-        } else {
-            tail
-        }
+    pub(crate) fn tail(&self) -> Vector {
+        *self.segments.last().expect("Snake has at least 1 segment")
+    }
+
+    fn head(&self) -> Vector {
+        *self.segments.first().expect("Snake has at least 1 segment")
     }
 }
 
@@ -43,9 +50,9 @@ impl Display for Snake {
         for y in (0..6).rev() {
             for x in 0..6 {
                 let p: Vector = (x, y).into();
-                let c = if p == self.head {
+                let c = if p == self.head() {
                     'H'
-                } else if p == self.tail {
+                } else if p == self.tail() {
                     'T'
                 } else {
                     '.'

@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use self::{
-    domain::{Input, Output},
+    domain::{Input, Movement, Output},
     vector::ORIGIN,
 };
 
@@ -13,21 +13,24 @@ mod snake;
 
 pub(crate) use self::parsing::parse;
 
-pub(crate) fn part1(input: &Input) -> Output {
+fn snake_walk(input: &[Movement], len: i32) -> usize {
     let (tails, _) = input.iter().fold(
-        (vec![ORIGIN], snake::Snake::new()),
+        (vec![ORIGIN], snake::Snake::of_length(len)),
         |(mut tails, snake), &movement| {
             let new_snake = (0..movement.length).fold(snake, |snake, _: i32| {
                 let new_snake = snake.mov(movement.direction);
-                //println!("Snake:\n{}", new_snake);
-                tails.push(new_snake.tail);
+                // println!("Snake:\n{}", new_snake);
+                tails.push(new_snake.tail());
                 new_snake
             });
             (tails, new_snake)
         },
     );
-
     tails.into_iter().unique().count()
+}
+
+pub(crate) fn part1(input: &Input) -> Output {
+    snake_walk(input, 2)
 }
 
 pub(crate) fn part2(_input: &Input) -> Output {
