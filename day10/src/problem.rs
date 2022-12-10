@@ -3,7 +3,7 @@ mod parsing;
 
 use itertools::Itertools;
 
-use self::domain::InstructionIteratorExt;
+use self::domain::{Crt, InstructionIteratorExt};
 pub(crate) use self::domain::{Input, Output};
 pub(crate) use self::parsing::parse;
 
@@ -21,8 +21,11 @@ pub(crate) fn part1(_input: &Input) -> Output {
         .sum()
 }
 
-pub(crate) fn part2(_input: &Input) -> Output {
-    42
+pub(crate) fn part2(_input: &Input) -> String {
+    let states = _input.iter().cloned().execute_instructions().collect_vec();
+
+    let crt = Crt::draw_screen(states);
+    format!("{}", crt)
 }
 
 #[cfg(test)]
@@ -51,13 +54,16 @@ mod test {
         assert_eq!(part1(&parse(INPUT_STR)), 13220)
     }
 
+    //
+
     #[test]
     fn part2_test_example() {
-        assert_eq!(part2(&parse(EXAMPLE_STR)), 42)
+        assert_eq!(part2(&parse(EXAMPLE_STR)), include_str!("_example_screen"))
     }
 
     #[test]
     fn part2_test_input() {
-        assert_eq!(part2(&parse(INPUT_STR)), 42)
+        // RUAKHBEK
+        assert_eq!(part2(&parse(INPUT_STR)), include_str!("_input_screen"))
     }
 }

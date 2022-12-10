@@ -112,3 +112,34 @@ impl Display for State {
         )
     }
 }
+
+pub struct Crt(Vec<State>);
+
+impl Crt {
+    pub(crate) fn draw_screen(states: Vec<State>) -> Crt {
+        Crt(states)
+    }
+}
+
+const SCREEN_WIDTH: i32 = 40;
+
+impl Display for Crt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (cycle, state) in self.0.iter().enumerate() {
+            let column = cycle as i32 % SCREEN_WIDTH;
+            let val = state.value_during_cycle();
+            let draw_sprite = (val - 1..=val + 1).contains(&(column as i32));
+            if draw_sprite {
+                '#'.fmt(f)?
+            } else {
+                '.'.fmt(f)?
+            }
+
+            if column == SCREEN_WIDTH - 1 {
+                '\n'.fmt(f)?
+            }
+        }
+
+        Ok(())
+    }
+}
