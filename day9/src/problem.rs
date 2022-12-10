@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use color_eyre::eyre::Result;
 use itertools::Itertools;
 
@@ -41,61 +39,11 @@ pub(crate) fn parse(s: &str) -> Result<Input> {
     Ok(instructions.collect_vec())
 }
 
-struct Snake {
-    head: Vector,
-    tail: Vector,
-}
-
-impl Snake {
-    fn new() -> Snake {
-        Snake {
-            head: ORIGIN,
-            tail: ORIGIN,
-        }
-    }
-
-    fn mov(&self, direction: Vector) -> Snake {
-        let new_head = self.head + direction;
-        let new_tail = Snake::constrain_tail_to_head(self.tail, new_head, self.head);
-        Snake {
-            head: new_head,
-            tail: new_tail,
-        }
-    }
-
-    fn constrain_tail_to_head(tail: Vector, new_head: Vector, old_head: Vector) -> Vector {
-        let difference = new_head - tail;
-        if difference.x.abs() > 1 || difference.y.abs() > 1 {
-            old_head
-        } else {
-            tail
-        }
-    }
-}
-
-impl Display for Snake {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for y in (0..6).rev() {
-            for x in 0..6 {
-                let p: Vector = (x, y).into();
-                let c = if p == self.head {
-                    'H'
-                } else if p == self.tail {
-                    'T'
-                } else {
-                    '.'
-                };
-                c.fmt(f)?;
-            }
-            '\n'.fmt(f)?;
-        }
-        Ok(())
-    }
-}
+mod snake;
 
 pub(crate) fn part1(input: &Input) -> Output {
     let (tails, _) = input.iter().fold(
-        (vec![ORIGIN], Snake::new()),
+        (vec![ORIGIN], snake::Snake::new()),
         |(mut tails, snake), &movement| {
             let new_snake = (0..movement.length).fold(snake, |snake, _: i32| {
                 let new_snake = snake.mov(movement.direction);
