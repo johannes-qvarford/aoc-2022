@@ -1,29 +1,28 @@
 mod domain;
 mod parsing;
 
-use itertools::Itertools;
-
 pub(crate) use self::domain::{Input, Output};
 pub(crate) use self::parsing::parse;
 
-pub(crate) fn part1(_input: &Input) -> Output {
+fn monkey_business(
+    _input: &Vec<domain::Monkey>,
+    worry_level_denominator: usize,
+    rounds: usize,
+) -> usize {
     let mut inspections = vec![0; _input.len()];
     let mut monkeys = _input.clone();
-    for _round in 0..20 {
-        //println!("<<ROUND({})>>", round + 1);
 
+    let modolu: usize = monkeys.iter().map(|monkey| monkey.denominator).product();
+
+    for _round in 0..rounds {
         for i in 0..monkeys.len() {
-            //println!("Monkey {}\n", i);
-
             let monkey = monkeys[i].clone();
             for item in monkey.items.iter() {
-                //println!("  Monkey inspects an item with a worry level of {}.", item);
                 let new_worry_level = monkey.operation.worry_level(*item);
-                let lowered_worry_level = new_worry_level / 3;
-                //println!("    Monkey gets bored with item. Worry level is divided by {} to {}.", 3, lowered_worry_level);
+                let lowered_worry_level = new_worry_level / worry_level_denominator;
+                let lowered_worry_level = lowered_worry_level % modolu;
 
                 let divisible = lowered_worry_level % monkey.denominator == 0;
-                //println!("    Current worry level is{} divisible by {}.", if divisible { "" } else { " not "}, monkey.denominator);
                 let target = if divisible {
                     monkey.target_if_true
                 } else {
@@ -33,28 +32,19 @@ pub(crate) fn part1(_input: &Input) -> Output {
                 monkeys[target].items.push_back(lowered_worry_level);
                 monkeys[i].items.pop_front();
                 inspections[i] += 1;
-                //println!("    Item with worry level {} is thrown to monkey {}.", lowered_worry_level, target);
             }
         }
-
-        //println!("After round {}, the monkeys are holding items with these worry levels:", round + 1);
-        for (_i, monkey) in monkeys.iter().enumerate() {
-            let _items = monkey.items.iter().join(", ");
-            //println!("Monkey {}: {}", i, items);
-        }
-        //println!("");
     }
-
-    for (_i, _count) in inspections.iter().enumerate() {
-        //println!("Monkey {} inspected items {} times.", i, count);
-    }
-
     inspections.sort_by(|a, b| b.cmp(a));
     inspections.into_iter().take(2).product()
 }
 
+pub(crate) fn part1(_input: &Input) -> Output {
+    monkey_business(_input, 3, 20)
+}
+
 pub(crate) fn part2(_input: &Input) -> Output {
-    42
+    monkey_business(_input, 1, 10_000)
 }
 
 #[cfg(test)]
@@ -74,11 +64,11 @@ mod test {
 
     #[test]
     fn part2_test_example() {
-        assert_eq!(part2(&parse(EXAMPLE_STR)), 42)
+        assert_eq!(part2(&parse(EXAMPLE_STR)), 2713310158)
     }
 
     #[test]
     fn part2_test_input() {
-        assert_eq!(part2(&parse(INPUT_STR)), 42)
+        assert_eq!(part2(&parse(INPUT_STR)), 17926061332)
     }
 }

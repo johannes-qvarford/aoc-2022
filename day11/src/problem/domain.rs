@@ -3,7 +3,7 @@ use std::{collections::VecDeque, str::FromStr};
 use color_eyre::Report;
 
 pub(crate) type Input = Vec<Monkey>;
-pub(crate) type Output = i32;
+pub(crate) type Output = usize;
 
 #[derive(Debug, Clone)]
 enum LeafExpression {
@@ -65,14 +65,8 @@ impl BinaryExpression {
         let left = self.left.worry_level(item);
         let right = self.right.worry_level(item);
         match self.operator {
-            Operator::Plus => {
-                //println!("    Worry level increases by {} to {}.", right, left + right);
-                left + right
-            }
-            Operator::Times => {
-                //println!("    Worry level is multiplied by {} to {}.", right, left * right);
-                left * right
-            }
+            Operator::Plus => left + right,
+            Operator::Times => left * right,
         }
     }
 }

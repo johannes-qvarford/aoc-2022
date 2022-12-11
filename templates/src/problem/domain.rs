@@ -1,2 +1,2 @@
-pub(crate) type Input = i32;
-pub(crate) type Output = i32;
+pub(crate) type Input = usize;
+pub(crate) type Output = usize;
