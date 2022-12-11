@@ -1,5 +1,5 @@
 [workspace]
-members = ["day1", "day2", "day3", "day4", "day5", "day6", "day7", "day8", "day9", "day10"]
+members = ["day1", "day2", "day3", "day4", "day5", "day6", "day7", "day8", "day9", "day10", "day11"]
 
 
 [workspace.dependencies]
@@ -10,3 +10,4 @@ thiserror = "1.0"
 tracking-allocator = { version = "0.4", default-features = false }
 nom = "7.1.1"
 test-case = "2.2.2"
+yaml-rust = "0.4"
